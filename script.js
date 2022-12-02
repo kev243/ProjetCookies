@@ -51,6 +51,9 @@ function createCookie(newCookie) {
     //on cree un document qui va stoker nos cookies 
     // toUTCString pour faire la conversion de notre date en un informat lisible 
     document.cookie = `${encodeURIComponent(newCookie.name)}=${encodeURIComponent(newCookie.value)};expires=${newCookie.expires.toUTCString()}`
+    if(cookieList.children.length) {
+        displayCookies()
+    };
 }
 
 //la fonction qui met nos cookie dans un tableau pour la verification 
@@ -82,3 +85,56 @@ function createToast({ name, state, color }) {
         toastInfo.remove()
     }, 2500)
 }
+
+const cookieList =document.querySelector(".cookies-list")
+const displayCookieBtn= document.querySelector(".display-cookie-btn")
+const infoTxt=document.querySelector(".info-txt")
+
+displayCookieBtn.addEventListener("click" , displayCookies)
+
+function displayCookies(){
+
+    if(cookieList.children.length) cookieList.textContent = "";
+    //reverse pour avoir le dernier cookie crée dans le tableau
+    //revoir les espaces global java 
+    const cookies = document.cookie.replace(/\s/g, "").split(";").reverse()
+    console.log(cookies)
+    if(!cookies[0]){
+        infoTxt.textContent="pas de cookies à afficher crée-en un !"
+        setTimeout(() => {
+            infoTxt.textContent=""
+        }, 1500)
+        return
+    }
+
+    createElements(cookies)
+
+
+
+}
+
+function createElements(cookies) {
+
+    cookies.forEach(cookie => {
+      const formatCookie = cookie.split("=");
+      const listItem = document.createElement("li");
+      const name = decodeURIComponent(formatCookie[0])
+      listItem.innerHTML =  `
+        <p>
+          <span>Nom</span> : ${name}
+        </p>
+        <p>
+          <span>Valeur</span>: ${decodeURIComponent(formatCookie[1])}
+        </p>
+        <button>X</button>
+      `;
+      listItem.querySelector("button").addEventListener("click", e => {
+        createToast({name:name, state: "supprimé", color: "crimson"})
+        document.cookie = `${formatCookie[0]}=; expires=${new Date(0)}`
+        e.target.parentElement.remove()
+      })
+      cookieList.appendChild(listItem);
+    
+    })
+  
+  }
